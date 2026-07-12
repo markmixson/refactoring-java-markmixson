@@ -54,11 +54,21 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
         if (value == null) {
             removeFromCache(key);
         } else {
-            maybeClearLeastRecentlyUsed(key);
-            final var updated = new OrderWrapper(key, counter.getAndIncrement());
-            wrapperHolder.put(key, updated);
-            valueHolder.put(updated, value);
+            final var updatedWrapper = getUpdatedWrapper(key);
+            wrapperHolder.put(key, updatedWrapper);
+            valueHolder.put(updatedWrapper, value);
         }
+    }
+
+    private OrderWrapper getUpdatedWrapper(final String key) {
+        return wrapperHolder.computeIfAbsent(key, _ -> {
+            if (wrapperHolder.size() == limits.maxItemsCount()) {
+                final var entry = valueHolder.pollFirstEntry();
+                wrapperHolder.remove(entry.getKey().key());
+                locks.remove(entry.getKey().key());
+            }
+            return new OrderWrapper(key, counter.getAndIncrement());
+        });
     }
 
     private void removeFromCache(final String key) {
@@ -66,14 +76,5 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
         valueHolder.remove(wrapper);
         wrapperHolder.remove(key);
         locks.remove(key);
-    }
-
-    private void maybeClearLeastRecentlyUsed(final String key) {
-        if (!wrapperHolder.containsKey(key)
-                && wrapperHolder.size() == limits.maxItemsCount()) {
-            final var entry = valueHolder.pollFirstEntry();
-            wrapperHolder.remove(entry.getKey().key());
-            locks.remove(entry.getKey().key());
-        }
     }
 }

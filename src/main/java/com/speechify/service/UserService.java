@@ -44,7 +44,7 @@ public class UserService {
         });
     }
 
-    @SuppressWarnings("java:S106")
+    @SuppressWarnings("java:S106") // TODO: setup proper logger
     private User buildUser(final UserDetails details,
                            final String clientId) throws IllegalArgumentException {
         if (getUserByEmail(details.email())

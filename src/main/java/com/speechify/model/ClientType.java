@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import static java.util.stream.Collectors.toUnmodifiableMap;
 
+// TODO: should probably be another lookup
 public enum ClientType {
     VERY_IMPORTANT_CLIENT("VeryImportantClient", false, 0),
     IMPORTANT_CLIENT("ImportantClient", true, 20000),
