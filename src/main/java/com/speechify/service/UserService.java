@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import com.speechify.cache.CacheLimits;
+import com.speechify.cache.LRUCache;
+import com.speechify.cache.LRUCacheProvider;
 import com.speechify.model.User;
 import com.speechify.model.UserDetails;
 import com.speechify.repository.ClientRepository;
@@ -16,13 +19,16 @@ public class UserService {
     private final ClientRepository clientRepository;
     private final UserRepository userRepository;
     private final Clock clock;
+    private final LRUCache<User> cache;
 
     public UserService(final ClientRepository clientRepository,
                        final UserRepository userRepository,
-                       final Clock clock) {
+                       final Clock clock,
+                       final CacheLimits limits) {
         this.userRepository = userRepository;
         this.clientRepository = clientRepository;
         this.clock = clock;
+        this.cache = LRUCacheProvider.createLRUCache(limits);
     }
 
     @SuppressWarnings("java:S106") // TODO: setup proper logger
@@ -36,7 +42,11 @@ public class UserService {
             try {
                 final var details = new UserDetails(dateOfBirth, email, firstname, surname, clock.instant());
                 details.check();
-                return userRepository.add(UserRepository.ID_KEYS, () -> buildUser(details, clientId));
+                return userRepository.add(UserRepository.ID_KEYS, () -> {
+                    final var user = buildUser(details, clientId);
+                    cache.set(user.details().email(), user);
+                    return user;
+                });
             } catch (IllegalStateException | IllegalArgumentException | IOException e) {
                 System.err.printf("User not added: %s%n", e.getMessage());
                 return false;
@@ -65,7 +75,11 @@ public class UserService {
                 System.err.println("User not added because user is empty!");
                 return false;
             } else {
-                return userRepository.update(user);
+                final var updated = userRepository.update(user);
+                if (updated) {
+                    cache.set(user.details().email(), user);
+                }
+                return updated;
             }
         });
     }
@@ -74,7 +88,15 @@ public class UserService {
         return userRepository.getAll();
     }
 
-    public CompletableFuture<Optional<User>> getUserByEmail(String email) {
-        return userRepository.getByEmail(email);
+    public CompletableFuture<Optional<User>> getUserByEmail(final String email) {
+        final var cachedUser = cache.get(email);
+        if (cachedUser == null) {
+            return userRepository.getByEmail(email).thenApply(user -> {
+                user.ifPresent(myUser -> cache.set(myUser.details().email(), myUser));
+                return user;
+            });
+        } else {
+            return CompletableFuture.completedFuture(Optional.of(cachedUser));
+        }
     }
 }

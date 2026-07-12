@@ -1,6 +1,7 @@
 package com.speechify.service;
 
 import com.speechify.TestUtil;
+import com.speechify.cache.CacheLimits;
 import com.speechify.model.ClientType;
 import com.speechify.model.User;
 import com.speechify.model.UserDetails;
@@ -29,7 +30,7 @@ class UserServiceTest {
         final var tmpFile = TestUtil.getTempFile();
         userRepository = new UserRepository(TestUtil.OBJECT_MAPPER, tmpFile);
         clientRepository = new ClientRepository(TestUtil.OBJECT_MAPPER, tmpFile);
-        userService = new UserService(clientRepository, userRepository, FIXED_CLOCK);
+        userService = new UserService(clientRepository, userRepository, FIXED_CLOCK, new CacheLimits(10));
     }
 
     @Test
@@ -146,5 +147,18 @@ class UserServiceTest {
                 user.details().firstname().equals("John")));
         Assertions.assertTrue(users.stream().anyMatch(client ->
                 client.details().firstname().equals("Jane")));
+    }
+
+    @Test
+    void testGetByEmail() {
+        final var client = clientRepository.getAll()
+                .join()
+                .stream()
+                .findFirst()
+                .orElseThrow();
+        final var uuid = UUID.randomUUID().toString();
+        final var user = addUser(uuid, client.id());
+        final var emailLookupUser = userService.getUserByEmail(user.details().email()).join().orElseThrow();
+        Assertions.assertEquals(emailLookupUser.id(), user.id());
     }
 }
