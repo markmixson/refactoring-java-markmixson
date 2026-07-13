@@ -123,4 +123,10 @@ class LruCacheTest {
         final var lruCache = createLRUCache(new CacheLimits(1));
         Assertions.assertNull(lruCache.get(null));
     }
+
+    @Test
+    void nullKeySetWithCacheSizeZero() {
+        final var lruCache = createLRUCache(new CacheLimits(0));
+        Assertions.assertDoesNotThrow(() -> lruCache.set("hi", "blah"));
+    }
 }

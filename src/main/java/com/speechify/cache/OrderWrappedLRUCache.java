@@ -20,13 +20,13 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
         final var lock = locks.computeIfAbsent(key, _ -> new ReentrantLock());
         try {
             lock.lock();
-            return doGet(key);
+            return doGet(key).orElse(null);
         } finally {
             lock.unlock();
         }
     }
 
-    private T doGet(final String key) {
+    private Optional<T> doGet(final String key) {
         return Optional.ofNullable(wrapperHolder.remove(key))
                 .map(valueHolder::remove)
                 .map(value -> {
@@ -34,8 +34,7 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
                     wrapperHolder.put(key, updatedWrapper);
                     valueHolder.put(updatedWrapper, value);
                     return value;
-                })
-                .orElse(null);
+                });
     }
 
     @Override
@@ -64,11 +63,11 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
 
     private void maybeClearLRU() {
         if (wrapperHolder.size() == limits.maxItemsCount()) {
-            Optional.ofNullable(valueHolder.pollFirstEntry())
-                    .ifPresent(entry -> {
-                        wrapperHolder.remove(entry.getKey().key());
-                        locks.remove(entry.getKey().key());
-                    });
+            final var entry = valueHolder.pollFirstEntry();
+            if (entry != null) {
+                wrapperHolder.remove(entry.getKey().key());
+                locks.remove(entry.getKey().key());
+            }
         }
     }
 
