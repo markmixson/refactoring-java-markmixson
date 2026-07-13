@@ -6,7 +6,6 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -25,7 +24,7 @@ public record UserRepository(ObjectMapper objectMapper, String dbFilePath) imple
 
     @Override
     public Optional<User> convert(final String id, final ObjectNode node) {
-            return Optional.of(objectMapper.treeToValue(node, User.class));
+        return Optional.of(objectMapper.treeToValue(node, User.class));
     }
 
     @SuppressWarnings("java:S106") // TODO: setup proper logger
