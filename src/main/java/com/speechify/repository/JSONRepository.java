@@ -28,13 +28,15 @@ public interface JSONRepository<T> {
         });
     }
 
+    @SuppressWarnings("java:S106") // TODO: user proper logger
     default CompletableFuture<List<T>> getAll(
             final Keys keys,
             final Predicate<String> idFilter) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 return doGetAll(keys, idFilter);
-            } catch (IOException _) {
+            } catch (IOException e) {
+                System.err.printf("Can get all values!: %s%n", e.getMessage());
                 return List.of();
             }
         });
