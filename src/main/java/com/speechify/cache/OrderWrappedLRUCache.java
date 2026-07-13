@@ -27,11 +27,8 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
     }
 
     private T doGet(final String key) {
-        final var wrapper = wrapperHolder.remove(key);
-        if (wrapper == null) {
-            return null;
-        }
-        return Optional.ofNullable(valueHolder.remove(wrapper))
+        return Optional.ofNullable(wrapperHolder.remove(key))
+                .map(valueHolder::remove)
                 .map(value -> {
                     final var updatedWrapper = new OrderWrapper(key, counter.getAndIncrement());
                     wrapperHolder.put(key, updatedWrapper);
@@ -58,16 +55,20 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
         if (value == null) {
             removeFromCache(key);
         } else {
-            if (wrapperHolder.size() == limits.maxItemsCount()) {
-                Optional.ofNullable(valueHolder.pollFirstEntry())
-                        .ifPresent(entry -> {
-                            wrapperHolder.remove(entry.getKey().key());
-                            locks.remove(entry.getKey().key());
-                        });
-            }
+            maybeClearLRU();
             final var updatedWrapper = new OrderWrapper(key, counter.getAndIncrement());
             valueHolder.put(updatedWrapper, value);
             wrapperHolder.put(key, updatedWrapper);
+        }
+    }
+
+    private void maybeClearLRU() {
+        if (wrapperHolder.size() == limits.maxItemsCount()) {
+            Optional.ofNullable(valueHolder.pollFirstEntry())
+                    .ifPresent(entry -> {
+                        wrapperHolder.remove(entry.getKey().key());
+                        locks.remove(entry.getKey().key());
+                    });
         }
     }
 
