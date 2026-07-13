@@ -33,22 +33,26 @@ public interface JSONRepository<T> {
             final Predicate<String> idFilter) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                final var list = new ArrayList<T>();
-                final var dbFile = getDbFile();
-                final var root = getRoot(dbFile);
-                final var items = getItems(root, keys);
-                for (int i = 0; i < items.size(); i++) {
-                    final var node = (ObjectNode) items.get(i);
-                    final var id = node.get(keys.fieldKey()).asString();
-                    if (idFilter.test(id)) {
-                        convert(id, node).ifPresent(list::add);
-                    }
-                }
-                return List.copyOf(list);
+                return doGetAll(keys, idFilter);
             } catch (IOException _) {
                 return List.of();
             }
         });
+    }
+
+    private List<T> doGetAll(final Keys keys, final Predicate<String> idFilter) throws IOException {
+        final var list = new ArrayList<T>();
+        final var dbFile = getDbFile();
+        final var root = getRoot(dbFile);
+        final var items = getItems(root, keys);
+        for (int i = 0; i < items.size(); i++) {
+            final var node = (ObjectNode) items.get(i);
+            final var id = node.get(keys.fieldKey()).asString();
+            if (idFilter.test(id)) {
+                convert(id, node).ifPresent(list::add);
+            }
+        }
+        return List.copyOf(list);
     }
 
     private File getDbFile() throws IOException {
