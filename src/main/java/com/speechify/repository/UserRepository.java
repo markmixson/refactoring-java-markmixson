@@ -24,7 +24,7 @@ public record UserRepository(ObjectMapper objectMapper, String dbFilePath) imple
 
     @Override
     public Optional<User> convert(final String id, final ObjectNode node) {
-        return Optional.of(objectMapper.treeToValue(node, User.class));
+        return Optional.ofNullable(objectMapper.treeToValue(node, User.class));
     }
 
     @SuppressWarnings("java:S106") // TODO: setup proper logger

@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -38,8 +37,7 @@ public class TestUtil {
                 LocalDate.EPOCH,
                 "hi",
                 "hi",
-                "hi",
-                Instant.EPOCH),
+                "hi"),
                 true,
                 10000.0);
     }

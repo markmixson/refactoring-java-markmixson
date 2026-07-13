@@ -120,8 +120,7 @@ class UserServiceTest {
                         user.details().dateOfBirth(),
                         user.details().email(),
                         user.details().firstname(),
-                        newLastName,
-                        FIXED_CLOCK.instant()),
+                        newLastName),
                 user.hasCreditLimit(),
                 user.creditLimit());
         Assertions.assertTrue(userService.updateUser(updatedUser).join());

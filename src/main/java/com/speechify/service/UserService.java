@@ -39,8 +39,8 @@ public class UserService {
             final String clientId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                final var details = new UserDetails(dateOfBirth, email, firstname, surname, clock.instant());
-                details.check();
+                final var details = new UserDetails(dateOfBirth, email, firstname, surname);
+                details.checkOnAdd(clock.instant());
                 final var userToAdd = buildUser(details, clientId);
                 final var addedUser = userRepository.add(UserRepository.ID_KEYS, userToAdd);
                 cache.set(addedUser.details().email(), addedUser);

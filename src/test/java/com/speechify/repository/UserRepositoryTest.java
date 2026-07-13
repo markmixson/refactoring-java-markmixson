@@ -9,7 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -57,8 +56,7 @@ class UserRepositoryTest {
                 LocalDate.MAX,
                 "hiii",
                 "hiii",
-                "hiii",
-                Instant.MAX),
+                "hiii"),
                 false,
                 0.0);
     }

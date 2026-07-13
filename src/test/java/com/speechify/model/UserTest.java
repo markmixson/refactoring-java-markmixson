@@ -5,16 +5,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.stream.Stream;
 
 class UserTest {
 
     private static final UserDetails TEST_DETAILS =
-            new UserDetails(LocalDate.EPOCH, "hi@hi.com", "meh", "meh",
-                    Instant.EPOCH.atZone(ZoneId.of("UTC")).plusYears(21).toInstant());
+            new UserDetails(LocalDate.EPOCH, "hi@hi.com", "meh", "meh");
 
     static Stream<Arguments> creditArguments() {
         return Stream.of(

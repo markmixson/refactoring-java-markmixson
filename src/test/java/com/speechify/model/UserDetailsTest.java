@@ -30,8 +30,8 @@ class UserDetailsTest {
     @ParameterizedTest
     @MethodSource("nullExceptions")
     void testNullValueExceptions(final String email, final String firstName, final String surname) {
-        final var toTest = new UserDetails(DEFAULT_BIRTHDAY, email, firstName, surname, DEFAULT_TIME);
-        Assertions.assertThrows(IllegalStateException.class, toTest::check);
+        final var toTest = new UserDetails(DEFAULT_BIRTHDAY, email, firstName, surname);
+        Assertions.assertThrows(IllegalStateException.class, () -> toTest.checkOnAdd(DEFAULT_TIME));
     }
 
     static Stream<Arguments> birthdayExceptions() {
@@ -49,7 +49,7 @@ class UserDetailsTest {
     @ParameterizedTest
     @MethodSource("birthdayExceptions")
     void testBirthDateExceptions(final LocalDate localDate, final Instant currentTime) {
-        final var toTest = new UserDetails(localDate, "hi", "hi", "hi", currentTime);
-        Assertions.assertThrows(IllegalStateException.class, toTest::check);
+        final var toTest = new UserDetails(localDate, "hi", "hi", "hi");
+        Assertions.assertThrows(IllegalStateException.class, () -> toTest.checkOnAdd(currentTime));
     }
 }

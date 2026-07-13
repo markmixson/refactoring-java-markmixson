@@ -9,11 +9,10 @@ public record UserDetails(
         LocalDate dateOfBirth,
         String email,
         String firstname,
-        String surname,
-        Instant currentTime) {
+        String surname) {
     private static final ZoneId UTC = ZoneId.of("UTC");
 
-    public void check() throws IllegalStateException {
+    public void checkOnAdd(final Instant currentTime) throws IllegalStateException {
         if (firstname == null
                 || surname == null
                 || email == null
