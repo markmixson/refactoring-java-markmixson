@@ -60,8 +60,8 @@ class ClientRepositoryTest {
 
     @Test
     void testAdd() throws IOException {
-        Assertions.assertTrue(clientRepository.add(
-                ClientRepository.ID_KEYS, () -> new Client("123", "hello")));
+        Assertions.assertNotNull(clientRepository.add(
+                ClientRepository.ID_KEYS, new Client("123", "hello")));
         final var output = clientRepository.getById("123").join().orElseThrow();
         Assertions.assertEquals("123", output.id());
     }

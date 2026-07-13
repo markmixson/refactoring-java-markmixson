@@ -43,9 +43,8 @@ class UserRepositoryTest {
     @Test
     void testUpdate() throws IOException {
         final var id = UUID.randomUUID().toString();
-        Assertions.assertTrue(userRepository.add(
-                UserRepository.ID_KEYS, () -> TestUtil.getUser(id)));
-        final var output = userRepository.getSingle(UserRepository.ID_KEYS, id).join().orElseThrow();
+        final var output = userRepository.add(
+                UserRepository.ID_KEYS, TestUtil.getUser(id));
         Assertions.assertEquals(id, output.id());
         final var updated = getUpdated(id);
         Assertions.assertTrue(userRepository.update(updated));

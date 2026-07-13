@@ -71,13 +71,13 @@ public interface JSONRepository<T> {
         return (ArrayNode) root.get(keys.itemKey());
     }
 
-    default boolean add(final Keys keys, final Supplier<T> supplier) throws IOException {
+    default T add(final Keys keys, final T toAdd) throws IOException {
         final var dbFile = getDbFile();
         final var root = getRoot(dbFile);
         final var items = getItems(root, keys);
-        items.add(objectMapper().valueToTree(supplier.get()));
+        items.add(objectMapper().valueToTree(toAdd));
         objectMapper().writeValue(dbFile, root);
-        return true;
+        return toAdd;
     }
 
     default boolean update(final Keys keys,

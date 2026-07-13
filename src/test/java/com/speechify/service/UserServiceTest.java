@@ -158,7 +158,7 @@ class UserServiceTest {
                 .orElseThrow();
         final var uuid = UUID.randomUUID().toString();
         final var user = addUser(uuid, client.id());
-        final var emailLookupUser = userService.getUserByEmail(user.details().email()).join().orElseThrow();
+        final var emailLookupUser = userService.getUserByEmail(user.details().email()).join();
         Assertions.assertEquals(emailLookupUser.id(), user.id());
     }
 }

@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.speechify.cache.CacheLimits;
@@ -42,11 +41,10 @@ public class UserService {
             try {
                 final var details = new UserDetails(dateOfBirth, email, firstname, surname, clock.instant());
                 details.check();
-                return userRepository.add(UserRepository.ID_KEYS, () -> {
-                    final var user = buildUser(details, clientId);
-                    cache.set(user.details().email(), user);
-                    return user;
-                });
+                final var userToAdd = buildUser(details, clientId);
+                final var addedUser = userRepository.add(UserRepository.ID_KEYS, userToAdd);
+                cache.set(addedUser.details().email(), addedUser);
+                return true;
             } catch (IllegalStateException | IllegalArgumentException | IOException e) {
                 System.err.printf("User not added: %s%n", e.getMessage());
                 return false;
@@ -57,9 +55,7 @@ public class UserService {
     @SuppressWarnings("java:S106") // TODO: setup proper logger
     private User buildUser(final UserDetails details,
                            final String clientId) throws IllegalArgumentException {
-        if (getUserByEmail(details.email())
-                .join()
-                .isPresent()) {
+        if (getUserByEmail(details.email()).join() != null) {
             throw new IllegalArgumentException("User is already present");
         }
         final var client = clientRepository.getById(clientId)
@@ -89,15 +85,15 @@ public class UserService {
         return userRepository.getAll();
     }
 
-    public CompletableFuture<Optional<User>> getUserByEmail(final String email) {
+    public CompletableFuture<User> getUserByEmail(final String email) {
         final var cachedUser = cache.get(email);
         if (cachedUser == null) {
             return userRepository.getByEmail(email).thenApply(user -> {
                 user.ifPresent(myUser -> cache.set(myUser.details().email(), myUser));
-                return user;
+                return user.orElse(null);
             });
         } else {
-            return CompletableFuture.completedFuture(Optional.of(cachedUser));
+            return CompletableFuture.completedFuture(cachedUser);
         }
     }
 }
