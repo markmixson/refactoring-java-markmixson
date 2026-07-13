@@ -36,7 +36,7 @@ public interface JSONRepository<T> {
             try {
                 return doGetAll(keys, idFilter);
             } catch (IOException e) {
-                System.err.printf("Can get all values!: %s%n", e.getMessage());
+                System.err.printf("Can't get all values!: %s%n", e.getMessage());
                 return List.of();
             }
         });
