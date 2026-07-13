@@ -37,9 +37,4 @@ public record UserRepository(ObjectMapper objectMapper, String dbFilePath) imple
             return false;
         }
     }
-
-    @Override
-    public List<User> getNewList() {
-        return new ArrayList<>();
-    }
 }

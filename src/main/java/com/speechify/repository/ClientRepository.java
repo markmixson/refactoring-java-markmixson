@@ -22,18 +22,8 @@ public record ClientRepository(ObjectMapper objectMapper, String dbFilePath) imp
     }
 
     @Override
-    public ObjectMapper objectMapper() {
-        return objectMapper;
-    }
-
-    @Override
     public Optional<Client> convert(final String id, final ObjectNode node) {
         final var client = new Client(id, node.get("name").asString());
         return Optional.of(client);
-    }
-
-    @Override
-    public List<Client> getNewList() {
-        return new ArrayList<>();
     }
 }

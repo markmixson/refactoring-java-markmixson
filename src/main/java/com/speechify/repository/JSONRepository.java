@@ -7,6 +7,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -14,14 +15,6 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public interface JSONRepository<T> {
-    String dbFilePath();
-
-    ObjectMapper objectMapper();
-
-    Optional<T> convert(String id, ObjectNode node);
-
-    List<T> getNewList();
-
     default CompletableFuture<Optional<T>> getSingle(
             final Keys keys,
             final String id) {
@@ -40,7 +33,7 @@ public interface JSONRepository<T> {
             final Predicate<String> idFilter) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                final var list = getNewList();
+                final var list = new ArrayList<T>();
                 final var dbFile = getDbFile();
                 final var root = getRoot(dbFile);
                 final var items = getItems(root, keys);
@@ -99,4 +92,10 @@ public interface JSONRepository<T> {
         }
         return false;
     }
+
+    String dbFilePath();
+
+    ObjectMapper objectMapper();
+
+    Optional<T> convert(String id, ObjectNode node);
 }
