@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public interface JSONRepository<T> {
     default CompletableFuture<Optional<T>> getSingle(
@@ -83,15 +82,15 @@ public interface JSONRepository<T> {
     }
 
     default boolean update(final Keys keys,
-                           final Supplier<T> itemSupplier,
-                           final Supplier<String> idSupplier) throws IOException {
+                           final T toUpdate,
+                           final String id) throws IOException {
         final var dbFile = getDbFile();
         final var root = getRoot(dbFile);
         final var items = getItems(root, keys);
         for (int i = 0; i < items.size(); i++) {
             final var node = (ObjectNode) items.get(i);
-            if (node.get(keys.fieldKey()).asString().equals(idSupplier.get())) {
-                items.set(i, objectMapper().valueToTree(itemSupplier.get()));
+            if (node.get(keys.fieldKey()).asString().equals(id)) {
+                items.set(i, objectMapper().valueToTree(toUpdate));
                 objectMapper().writeValue(dbFile, root);
                 return true;
             }

@@ -30,7 +30,7 @@ public record UserRepository(ObjectMapper objectMapper, String dbFilePath) imple
     @SuppressWarnings("java:S106") // TODO: setup proper logger
     public boolean update(final User user) {
         try {
-            return update(ID_KEYS, () -> user, user::id);
+            return update(ID_KEYS, user, user.id());
         } catch (IOException e) {
             System.err.printf("Error updating user: %s%n", e.getMessage());
             return false;
