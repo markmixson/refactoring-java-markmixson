@@ -1,5 +1,6 @@
 package com.speechify.cache;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -30,11 +31,14 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
         if (wrapper == null) {
             return null;
         }
-        final var value = valueHolder.remove(wrapper);
-        final var updatedWrapper = new OrderWrapper(key, counter.getAndIncrement());
-        wrapperHolder.put(key, updatedWrapper);
-        valueHolder.put(updatedWrapper, value);
-        return value;
+        return Optional.ofNullable(valueHolder.remove(wrapper))
+                .map(value -> {
+                    final var updatedWrapper = new OrderWrapper(key, counter.getAndIncrement());
+                    wrapperHolder.put(key, updatedWrapper);
+                    valueHolder.put(updatedWrapper, value);
+                    return value;
+                })
+                .orElse(null);
     }
 
     @Override
@@ -55,9 +59,11 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
             removeFromCache(key);
         } else {
             if (wrapperHolder.size() == limits.maxItemsCount()) {
-                final var entry = valueHolder.pollFirstEntry();
-                wrapperHolder.remove(entry.getKey().key());
-                locks.remove(entry.getKey().key());
+                Optional.ofNullable(valueHolder.pollFirstEntry())
+                        .ifPresent(entry -> {
+                            wrapperHolder.remove(entry.getKey().key());
+                            locks.remove(entry.getKey().key());
+                        });
             }
             final var updatedWrapper = new OrderWrapper(key, counter.getAndIncrement());
             valueHolder.put(updatedWrapper, value);
