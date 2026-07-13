@@ -75,6 +75,7 @@ public class UserService {
                 System.err.println("User not added because user is empty!");
                 return false;
             } else {
+                cache.set(user.details().email(), null);
                 final var updated = userRepository.update(user);
                 if (updated) {
                     cache.set(user.details().email(), user);

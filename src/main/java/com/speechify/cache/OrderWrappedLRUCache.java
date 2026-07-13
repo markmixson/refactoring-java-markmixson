@@ -67,8 +67,10 @@ public record OrderWrappedLRUCache<T>(CacheLimits limits,
 
     private void removeFromCache(final String key) {
         final var wrapper = wrapperHolder.get(key);
-        valueHolder.remove(wrapper);
-        wrapperHolder.remove(key);
-        locks.remove(key);
+        if (wrapper != null) {
+            valueHolder.remove(wrapper);
+            wrapperHolder.remove(key);
+            locks.remove(key);
+        }
     }
 }
